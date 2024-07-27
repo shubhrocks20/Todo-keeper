@@ -35,7 +35,7 @@ const LoginPage = () => {
       });
       const result = await response.json();
       if (!response.ok) {
-        setError(result.message || "Login failed");
+        setError(result || "Login failed");
       } else {
         const access_token = result;
         localStorage.setItem("access_token", access_token);

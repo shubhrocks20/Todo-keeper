@@ -61,7 +61,7 @@ const todoController = {
   },
   async deleteTodo(req, res, next) {
     const { id } = req.params;
-    console.log("hello");
+
     const { _id } = req.user;
     if (!_id) {
       return next(customErrorHandler.notFound("No id found!"));
@@ -78,7 +78,69 @@ const todoController = {
         return next(customErrorHandler.notFound("No Todo found for this user"));
       }
 
-      res.status(204).json({ message: "Successfully Deleted Todo" });
+      res.status(200).json({ message: "Successfully Deleted Todo" });
+    } catch (error) {
+      return next(error);
+    }
+  },
+  async singleTodo(req, res, next) {
+    const { id } = req.params;
+    const { _id } = req.user;
+    if (!_id) {
+      return next(customErrorHandler.notFound("No id found!"));
+    }
+    try {
+      const user = await User.findById(_id);
+      if (!user) {
+        return next(customErrorHandler.notFound("No User Found with this id"));
+      }
+      // Now fetch all the todo
+      const todo = await Todo.findOne({ _id: id });
+
+      if (!todo) {
+        return next(
+          customErrorHandler.notFound("No Todo found for with this id")
+        );
+      }
+
+      res.status(200).json(todo);
+    } catch (error) {
+      return next(error);
+    }
+  },
+  async updateTodo(req, res, next) {
+    const { id } = req.params;
+    const { _id } = req.user;
+    if (!_id) {
+      return next(customErrorHandler.notFound("No user id found!"));
+    }
+
+    try {
+      // Check if the user exists
+      const user = await User.findById(_id);
+      if (!user) {
+        return next(customErrorHandler.notFound("No User Found with this id"));
+      }
+
+      // Check if the todo item exists and belongs to the user
+      const todo = await Todo.findOne({ _id: id, author: _id });
+      if (!todo) {
+        return next(
+          customErrorHandler.notFound("No Todo found with this id for the user")
+        );
+      }
+
+      // Update only the fields that are provided in the request body
+      if (req.body.title) {
+        todo.title = req.body.title;
+      }
+      if (req.body.description) {
+        todo.description = req.body.description;
+      }
+      // Save the updated todo item
+      const updatedTodo = await todo.save();
+
+      res.status(200).json({ message: "Todo Updated Successfully" });
     } catch (error) {
       return next(error);
     }

@@ -2,9 +2,11 @@
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import Todo from "./todo";
+import TodoForm from "./TodoForm";
 
 const Todos = () => {
   const [todos, setTodos] = useState([]);
+  const [updatingTodo, setUpdatingTodo] = useState(null);
   const router = useRouter();
 
   if (!localStorage.getItem("access_token")) {
@@ -111,6 +113,25 @@ const Todos = () => {
       console.log(error);
     }
   };
+  const handleUpdate = async (id) => {
+    const access_token = localStorage.getItem("access_token");
+    try {
+      const response = await fetch(`http://localhost:4000/api/todo/${id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `bearer ${access_token}`,
+        },
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        console.log(result);
+      }
+      setUpdatingTodo(result);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 ">
@@ -128,45 +149,53 @@ const Todos = () => {
 
       <main className="container mx-auto p-4">
         {/* Todo Maker Form */}
-        <section className="bg-white shadow-lg rounded-lg p-6 mb-6 text-black">
-          <h2 className="text-2xl font-semibold mb-4">Add New Todo</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="title" className="block text-gray-600">
-                Title
-              </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md "
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="description" className="block text-gray-600">
-                Description
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                rows="4"
-                required
-              ></textarea>
-            </div>
-            <button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
-            >
-              Add Todo
-            </button>
-          </form>
-        </section>
+        {!updatingTodo ? (
+          <section className="bg-white shadow-lg rounded-lg p-6 mb-6 text-black">
+            <h2 className="text-2xl font-semibold mb-4">Add New Todo</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <label htmlFor="title" className="block text-gray-600">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md "
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="description" className="block text-gray-600">
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                  rows="4"
+                  required
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+              >
+                Add Todo
+              </button>
+            </form>
+          </section>
+        ) : (
+          <TodoForm
+            result={updatingTodo}
+            setUpdatingTodo={setUpdatingTodo}
+            fetchTodos={fetchTodos}
+          />
+        )}
 
         {/* Todos List */}
         <section>
@@ -180,6 +209,7 @@ const Todos = () => {
                 description={todo.description}
                 author={todo.author.name}
                 handleDelete={handleDelete}
+                handleUpdate={handleUpdate}
               />
             ))}
           </div>

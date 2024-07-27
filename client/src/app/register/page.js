@@ -36,7 +36,7 @@ const RegisterPage = () => {
       });
       const result = await response.json();
       if (!response.ok) {
-        setError(result.message || "Registration failed");
+        setError(result || "Registration failed");
       } else {
         router.push("/login");
       }

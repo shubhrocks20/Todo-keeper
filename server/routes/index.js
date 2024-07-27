@@ -10,5 +10,7 @@ router.get("/me", authMiddleware, userController.me);
 router.post("/createTodo", authMiddleware, todoController.create);
 router.get("/read", authMiddleware, todoController.readTodo);
 router.delete("/deleteTodo/:id", authMiddleware, todoController.deleteTodo);
+router.get("/todo/:id", authMiddleware, todoController.singleTodo);
+router.patch("/todo/:id", authMiddleware, todoController.updateTodo);
 
 export default router;
